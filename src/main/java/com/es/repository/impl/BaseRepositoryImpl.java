@@ -185,7 +185,7 @@ public class BaseRepositoryImpl<T> implements IBaseRepository<T> {
         HighlightBuilder highlightBuilder = qo.createHighlightBuilder();
         sourceBuilder.query(QueryBuilders.matchQuery(GoodsVo.TITLE_,qo.getKeyword()));
         sourceBuilder.highlighter(highlightBuilder);
-        System.out.println("查询语句 = " + sourceBuilder);
+        System.out.println("查询语句 = " + sourceBuilder.toString());
         request.source(sourceBuilder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         SearchHits searchHits = response.getHits();
