@@ -7,7 +7,6 @@ import com.es.repository.IBaseRepository;
 import com.es.util.BeanUtil;
 import com.es.util.RepositoryName;
 import com.es.vo.GoodsVo;
-import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -159,7 +158,8 @@ public class BaseRepositoryImpl<T> implements IBaseRepository<T> {
         request.source(sourceBuilder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         SearchHits searchHits = response.getHits();
-        TotalHits total = searchHits.getTotalHits();
+//        TotalHits total = searchHits.getTotalHits();
+        long total = searchHits.getTotalHits();
         SearchHit[] searchHitArray = searchHits.getHits();
         List<T> data = new ArrayList<>();
         for(SearchHit hit : searchHitArray){
@@ -190,7 +190,7 @@ public class BaseRepositoryImpl<T> implements IBaseRepository<T> {
         request.source(sourceBuilder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         SearchHits searchHits = response.getHits();
-        TotalHits total = searchHits.getTotalHits();
+        long total = searchHits.getTotalHits();
         SearchHit[] searchHitArray = searchHits.getHits();
 //        System.out.println("JSONArray.toJSONString(searchHitArray) = " + JSONArray.toJSONString(searchHitArray));
         List<T> data = new ArrayList<>();
