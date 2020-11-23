@@ -22,6 +22,10 @@ public class SearchController {
         boolean big = searchApi.indexIsExist(restClient, "fas_index");
         System.out.println("big = " + big);
 
+        String keyword = "123";
+
+        searchApi.multiQuery(keyword);
+
 
         return null;
     }

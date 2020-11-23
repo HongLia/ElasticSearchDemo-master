@@ -79,6 +79,28 @@ public class SearchApiImpl implements SearchApi {
         }
     }
 
+    @Override
+    public void multiQuery(String keyword) {
+
+        Response response;
+        try {
+            Request request = new Request("GET", "/" + "big" + "/" + "goods");
+            request.addParameter("pretty", "true");
+
+            RestClient restClient = this.getRestClient();
+            response = restClient.performRequest(request);
+            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
+                LOG.info("QueryData successful.");
+            } else {
+                LOG.error("QueryData failed.");
+            }
+            LOG.info("QueryData response entity is : " + EntityUtils.toString(response.getEntity()));
+        } catch (Exception e) {
+            LOG.error("QueryData failed, exception occurred.", e);
+        }
+
+    }
+
     /**
      * Create one index with customized shard number and replica number.
      */

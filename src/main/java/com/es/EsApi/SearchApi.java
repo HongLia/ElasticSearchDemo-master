@@ -45,4 +45,7 @@ public interface SearchApi {
      * @throws Exception
      */
     void queryClusterInfo(RestClient restClientTest);
+
+    void multiQuery(String keyword);
+
 }
