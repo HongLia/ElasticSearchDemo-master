@@ -15,6 +15,7 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -83,18 +84,64 @@ public class SearchApiImpl implements SearchApi {
     public void multiQuery(String keyword) {
 
         Response response;
-        try {
-            Request request = new Request("GET", "/" + "big" + "/" + "goods");
-            request.addParameter("pretty", "true");
 
-            RestClient restClient = this.getRestClient();
-            response = restClient.performRequest(request);
-            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
-                LOG.info("QueryData successful.");
-            } else {
-                LOG.error("QueryData failed.");
-            }
-            LOG.info("QueryData response entity is : " + EntityUtils.toString(response.getEntity()));
+        try {
+
+            MultiMatchQueryBuilder queryBuilder = new MultiMatchQueryBuilder(keyword).field("title").field("summary");
+
+
+//            Settings settings = Settings.builder().put("cluster.name", "my-application").build();
+//            //获取es主机中节点的ip地址及端口号(以下是单个节点案例)
+//            TransportClient client = new PreBuiltTransportClient(settings).addTransportAddress(new TransportAddress(InetAddress.getByName("192.168.1.94"), 9300));
+//
+//            SearchRequest searchRequest = new SearchRequest("xc_course");
+//            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+//            //搜索方式
+//            //MultiMatchQuery
+//            searchSourceBuilder.query(QueryBuilders.multiMatchQuery("spring css","name","description")
+//                    .minimumShouldMatch("50%")
+//                    .field("name",10));
+//            //设置源字段过虑,第一个参数结果集包括哪些字段，第二个参数表示结果集不包括哪些字段
+//            searchSourceBuilder.fetchSource(new String[]{"name","studymodel","price","timestamp"},new String[]{});
+//            //向搜索请求对象中设置搜索源
+//            searchRequest.source(searchSourceBuilder);
+//            //执行搜索,向ES发起Http请求,获得结果对象
+//            SearchResponse searchResponse = client.search(searchRequest);
+//            //搜索结果
+//            SearchHits hits = searchResponse.getHits();
+//            //获得匹配总记录
+//            long totalHits = hits.getTotalHits();
+
+
+//            Gson gson = new Gson();
+//            Map<String, Object> esMap = new HashMap<>();
+//            esMap.put("from", "0");
+//            esMap.put("size", "20");
+//            esMap.put("query", "Beijing,China");
+//            esMap.put("pubtime", "2020-01-01");
+//            esMap.put("description", "Elasticsearch is a highly scalable open-source full-text search and analytics engine.");
+//            String jsonString = gson.toJson(esMap);
+
+//            String jsonString =
+//                    "{" +
+//                        "\"query\":{" + "\"number_of_shards\":\"" + shardNum + "\"," +
+//                        "\"highlight\":\"" + replicaNum + "\"" + "}" +
+//                        "\"from\":\"" + 0 + "\"" + "}" +
+//                        "\"size\":\"" + 20 + "\"" + "}" +
+//                    "}";
+//
+//            HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
+//            Request request = new Request("GET", "/" + "big" + "/" + "goods");
+//            request.addParameter("pretty", "true");
+//            request.setEntity(entity);
+//            RestClient restClient = this.getRestClient();
+//            response = restClient.performRequest(request);
+//            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
+//                LOG.info("QueryData successful.");
+//            } else {
+//                LOG.error("QueryData failed.");
+//            }
+//            LOG.info("QueryData response entity is : " + EntityUtils.toString(response.getEntity()));
         } catch (Exception e) {
             LOG.error("QueryData failed, exception occurred.", e);
         }
