@@ -7,6 +7,35 @@ public interface SearchApi {
 
     void createIndexWithShardNum(RestClient restClientTest, String index);
 
+    /**
+     * 获取es的地段JsonStr
+     *
+     * @param fieldType     字段类型
+     * @param propName      字段名称
+     * @param searchFieldIs 是否搜索
+     * @return
+     */
+    String getEsFile(String fieldType, String propName, String searchFieldIs);
+
+    /**
+     * 获取es搜索字段JsonStr
+     *
+     * @param fieldType
+     * @param propName
+     * @return
+     */
+    String getEsSearchFile(String fieldType, String propName);
+
+    /**
+     * 创建实体
+     *
+     * @param entityName    实体名称
+     * @param esFileConfigs es的字段JsonStr
+     * @return
+     */
+    int createIndex(String entityName, String esFileConfigs);
+
+
     void putData(RestClient restClientTest, String index, String type, String id);
 
     void queryData(RestClient restClientTest, String index, String type, String id);
@@ -35,6 +64,9 @@ public interface SearchApi {
      * @return
      */
     boolean indexIsExist(RestClient restClientTest, String index);
+
+
+
 
     /**
      * Query the cluster's information

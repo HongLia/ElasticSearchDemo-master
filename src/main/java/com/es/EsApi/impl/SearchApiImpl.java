@@ -1,6 +1,8 @@
 package com.es.EsApi.impl;
 
 import com.es.EsApi.SearchApi;
+import com.es.enums.WhetherEnum;
+import com.es.util.EsUtils;
 import com.google.gson.Gson;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -55,6 +57,171 @@ public class SearchApiImpl implements SearchApi {
             LOG.error("Check index failed, exception occurred.", e);
         }
         return false;
+    }
+
+    @Override
+    public int createIndex(String entityName,String esFileConfigs) {
+        int result = 0;
+        try {
+            //查询实体信息
+//            ZsEntity entityIById = entityMapper.getEntityIById(entity_id);
+//
+//            //查询所有字段信息
+//            List<Map> entityFields = entityFieldMapper.getEntityFields(entity_id, EnableEnum.EFFECTIVE.getCode());
+//            String esFileConfigs = "";
+//            if (CollectionUtils.isNotEmpty(entityFields)) {
+//                for (Map entityField : entityFields) {
+//                    if (esFileConfigs.equals("")) {
+//                        esFileConfigs += this.getEsFile(entityField);
+//                    } else {
+//                        esFileConfigs += "," + this.getEsFile(entityField);
+//                    }
+//                }
+//            }
+//
+//
+//            //查询所有搜索字段信息
+//            List<Map> searchFields = entityFieldMapper.getSearchFieldsByEntityId(entity_id);
+//            if (CollectionUtils.isNotEmpty(searchFields)) {
+//                for (Map entitySearchField : searchFields) {
+//                    esFileConfigs += this.getEsSearchFile(entitySearchField);
+//                }
+//            }
+
+            String mappingJsonString =
+                    "    \"mappings\": {\n" +
+                            "            \"properties\": {\n" +
+                            esFileConfigs +
+                            "            }\n" +
+                            "    }\n";
+
+            result = EsUtils.createIndex(entityName, mappingJsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    @Override
+    public String getEsFile(String fieldType, String propName, String searchField) {
+//        //字段类型
+//        String fieldType = entityField.get("field_type") + "";
+//        //字段名称
+//        String propName = entityField.get("prop_name") + "";
+//        //是否搜索
+//        String searchField = entityField.get("search_field") + "";
+
+        //mapping  类型
+        String type = "";
+        //mapping  分词器  ik_max_word  pinyin
+        String analyzer = "";
+        //mapping  是否作为搜索项
+        String index = "";
+        //mapping  指定格式（日期）
+        String format = "";
+
+        //根据字段是否为搜索项进行判断
+        if (searchField.equals(WhetherEnum.YES.getCode())) {
+            index = "true";
+
+
+        } else {
+            index = "false";
+        }
+
+        //根据字段类型进行判断
+        if (fieldType.equals("varchar") ||
+                fieldType.equals("nvarchar2")) {
+            type = "text";
+        } else if (fieldType.contains("int") ||
+                fieldType.equals("text") ||
+                fieldType.equals("numeric")) {
+            type = "keyword";
+        } else if (fieldType.equals("timestamp")) {
+            type = "keyword";
+//            format = "yyyy-MM-dd HH:mm:ss";
+        }
+
+        //    "name": {
+        //        "type": "keyword",
+        //        "analyzer": "ik_max_word",
+        //        "index": true
+        //    }
+        String esFileConfig = "\"" + propName + "\": {\n"
+                + "        \"type\": \"" + type + "\", \n";
+        if (analyzer != "") {
+            esFileConfig += "\"analyzer\": \"" + analyzer + "\", \n";
+        }
+        if (format != "") {
+            esFileConfig += "\"format\": \"" + format + "\", \n";
+        }
+        esFileConfig += "\"index\": " + index + "\n" + "}";
+//                +"        \"analyzer\": \""+analyzer+"\", \n"
+//        +"        \"format\": \"" + format + "\", \n"
+//                + "        \"index\": " + index + "\n"
+//                + "    }";
+        return esFileConfig;
+    }
+
+    @Override
+    public String getEsSearchFile(String fieldType, String propName) {
+//        //字段类型
+//        String fieldType = entityField.get("field_type") + "";
+//        //字段名称
+//        String propName = entityField.get("prop_name") + "";
+
+        //mapping  类型
+        String type = "";
+        //mapping  分词器  ik_max_word  pinyin
+        String analyzer = "";
+        //mapping  是否作为搜索项
+        String index = "true";
+        //mapping  指定格式（日期）
+        String format = "";
+
+
+        //根据字段类型进行判断
+        if (fieldType.equals("varchar") ||
+                fieldType.equals("nvarchar2")) {
+            type = "text";
+            analyzer = "ik_max_word";
+        } else if (fieldType.contains("int") ||
+                fieldType.equals("text") ||
+                fieldType.equals("numeric")) {
+            type = "keyword";
+        } else if (fieldType.equals("timestamp")) {
+            type = "keyword";
+//            format = "yyyy-MM-dd HH:mm:ss";
+        }
+
+        //    "name": {
+        //        "type": "keyword",
+        //        "analyzer": "ik_max_word",
+        //        "index": true
+        //    }
+        String esSearchConfig = ", \n" + "\"" + "fasik_" + propName + "\": {\n"
+                + "        \"type\": \"" + type + "\", \n";
+        if (analyzer != "") {
+            esSearchConfig += "\"analyzer\": \"" + analyzer + "\", \n"
+                    + "        \"search_analyzer\": \"" + analyzer + "\", \n"
+                    + "        \"fields\": {\n" +
+                    "          \"my_pinyin\":{\n" +
+                    "            \"type\":\"text\",\n" +
+                    "            \"analyzer\": \"ik_pinyin_analyzer\",\n" +
+                    "            \"search_analyzer\": \"ik_pinyin_analyzer\"\n" +
+                    "          }\n" +
+                    "        },";
+        }
+        if (format != "") {
+            esSearchConfig += "\"format\": \"" + format + "\", \n";
+        }
+        esSearchConfig += "\"index\": " + index + "\n" + "}";
+//                +"        \"analyzer\": \""+analyzer+"\", \n"
+//        +"        \"format\": \"" + format + "\", \n"
+//                + "        \"index\": " + index + "\n"
+//                + "    }";
+        return esSearchConfig;
     }
 
 
