@@ -12,15 +12,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.nio.entity.NStringEntity;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.client.Request;
+import org.elasticsearch.client.*;
 import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,7 @@ public class EsUtils {
     private static int replicaNum;
     private static int ConnectTimeout;
     private static int SocketTimeout;
+    private static int ConnectionRequestTimeout;
     private static String schema = "https";
     private static RestClient restClient = null;
 
@@ -82,6 +82,7 @@ public class EsUtils {
         isSecureMode = PropertiesUtil.getpropetyByfile("isSecureMode", CONFIGURATION_FILE_NAME);
         shardNum = Integer.valueOf(PropertiesUtil.getpropetyByfile("shardNum", CONFIGURATION_FILE_NAME));
         replicaNum = Integer.valueOf(PropertiesUtil.getpropetyByfile("replicaNum", CONFIGURATION_FILE_NAME));
+        ConnectionRequestTimeout = Integer.valueOf(PropertiesUtil.getpropetyByfile("ConnectionRequestTimeout", CONFIGURATION_FILE_NAME));
 
 //        esServerHost = properties.getProperty("EsServerHost");
 //        MaxRetryTimeoutMillis = Integer.valueOf(properties.getProperty("MaxRetryTimeoutMillis"));
@@ -139,7 +140,10 @@ public class EsUtils {
      * @return
      * @throws Exception
      */
-    public static RestClient getRestClient(HttpHost[] HostArray) throws Exception {
+    public static RestClient getRestClient() throws Exception {
+
+        //获取es集群地址
+        HttpHost[] HostArray = getHostArray(esServerHost);
 
         RestClientBuilder builder = null;
         RestClient restClient = null;
@@ -156,7 +160,7 @@ public class EsUtils {
         builder = builder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback() {
             @Override
             public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
-                return requestConfigBuilder.setConnectTimeout(ConnectTimeout).setSocketTimeout(SocketTimeout);
+                return requestConfigBuilder.setConnectTimeout(ConnectTimeout).setSocketTimeout(SocketTimeout).setConnectionRequestTimeout(ConnectionRequestTimeout);
             }
         }).setMaxRetryTimeoutMillis(MaxRetryTimeoutMillis);
 
@@ -192,13 +196,33 @@ public class EsUtils {
     }
 
 
+    public static String queryClusterInfo(RestClient restClient) throws IOException {
+        Response response = null;
+        try {
+            Request request = new Request("GET", "/_cluster/health");
+            request.addParameter("pretty", "true");
+            response = restClient.performRequest(request);
+
+            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
+                LOG.info("QueryClusterInfo successful.");
+            } else {
+                LOG.error("QueryClusterInfo failed.");
+            }
+            LOG.info("QueryClusterInfo response entity is : " + EntityUtils.toString(response.getEntity()));
+        } catch (Exception e) {
+            LOG.error("QueryClusterInfo failed, exception occurred.", e);
+        }
+        return EntityUtils.toString(response.getEntity());
+    }
+
+
     /**
      * 创建索引
      *
      * @param indexName
      * @throws Exception
      */
-    public static int createIndex(String indexName, String mappingJsonString) throws Exception {
+    public static int createIndex(RestClient restClient, String indexName, String mappingJsonString) throws Exception {
         //自定义分词器相关配置，支持ik+pinyin同时
         String indexJsonString = "\"index\":{\n" +
                 "      \"analysis\":{\n" +
@@ -218,24 +242,18 @@ public class EsUtils {
                 "      }\n" +
                 "    }";
 
-
         int result = 0;
         initProperties();
         Response rsp = null;
-//        Map<String, String> params = Collections.singletonMap("pretty", "true");
         String jsonString = "{" + "\"settings\":{" + "\"number_of_shards\":\"" + shardNum + "\","
                 + "\"number_of_replicas\":\"" + replicaNum + "\"," + indexJsonString + "}," + mappingJsonString + "}";
         LOG.info("Create index  settings and mappings" + jsonString);
         HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
-        RestClient restClient = null;
         try {
-            restClient = getRestClient(getHostArray(esServerHost));
-
             Request request = new Request("PUT", "/" + indexName + "?include_type_name=false");
             request.addParameter("pretty", "true");
             request.setEntity(entity);
             rsp = restClient.performRequest(request);
-//            rsp = restClient.performRequest("PUT", "/" + indexName, params, entity);
             if (HttpStatus.SC_OK == rsp.getStatusLine().getStatusCode()) {
                 LOG.info("CreateIndex successful.");
                 System.out.println("CreateIndex successful.");
@@ -248,15 +266,6 @@ public class EsUtils {
             System.out.println("CreateIndex response entity is : " + EntityUtils.toString(rsp.getEntity()));
         } catch (Exception e) {
             LOG.error("CreateIndex failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in createIndex.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in createIndex.", e1);
-                }
-            }
         }
         return result;
     }
@@ -267,16 +276,13 @@ public class EsUtils {
      *
      * @param indexName
      */
-    public static boolean exist(String indexName) throws Exception {
+    public static boolean exist(RestClient restClient, String indexName) throws Exception {
         initProperties();
         Response rsp = null;
         try {
-            restClient = getRestClient(getHostArray(esServerHost));
-
             Request request = new Request("HEAD", "/" + indexName);
             request.addParameter("pretty", "true");
             rsp = restClient.performRequest(request);
-//            rsp = restClient.performRequest("HEAD", "/" + indexName, params);
             if (HttpStatus.SC_OK == rsp.getStatusLine().getStatusCode()) {
                 LOG.info("Check index successful,index is exist : " + index);
                 return true;
@@ -288,15 +294,6 @@ public class EsUtils {
 
         } catch (Exception e) {
             LOG.error("Check index failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in exist.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in exist.", e1);
-                }
-            }
         }
         return false;
     }
@@ -308,16 +305,13 @@ public class EsUtils {
      *
      * @param indexName
      */
-    public static Boolean deleteIndex(String indexName) throws Exception {
+    public static Boolean deleteIndex(RestClient restClient, String indexName) throws Exception {
         initProperties();
         Boolean result = false;
         Response rsp = null;
         try {
-            restClient = getRestClient(getHostArray(esServerHost));
-
             Request request = new Request("DELETE", "/" + indexName + "?&pretty=true");
             rsp = restClient.performRequest(request);
-//            rsp = restClient.performRequest("DELETE", "/" + indexName + "?&pretty=true");
             if (HttpStatus.SC_OK == rsp.getStatusLine().getStatusCode()) {
                 LOG.info("deleteIndex successful.");
                 result = true;
@@ -327,17 +321,27 @@ public class EsUtils {
             LOG.info("deleteIndex response entity is : " + EntityUtils.toString(rsp.getEntity()));
         } catch (Exception e) {
             LOG.error("deleteIndex failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in deleteIndex.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in deleteIndex.", e1);
-                }
+        }
+
+        return result;
+    }
+
+
+    /**
+     * 关闭客户端
+     * Close the client
+     *
+     * @param restClient
+     */
+    public static void CloseRestClient(RestClient restClient) {
+        if (restClient != null) {
+            try {
+                restClient.close();
+                LOG.info("Close the client successful in deleteIndex.");
+            } catch (Exception e1) {
+                LOG.error("Close the client failed in deleteIndex.", e1);
             }
         }
-        return result;
     }
 
     /**
@@ -346,7 +350,7 @@ public class EsUtils {
      *
      * @param indexName
      */
-    public static Boolean clearDataByIndexName(String indexName) throws Exception {
+    public static Boolean clearDataByIndexName(RestClient restClient, String indexName) throws Exception {
         initProperties();
         Boolean result = false;
         String jsonString = "{\n" + "  \"query\": {\n" + "    \"match_all\": {}\n" + "  }\n" + "}";
@@ -354,7 +358,7 @@ public class EsUtils {
         HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
         Response response;
         try {
-            restClient = getRestClient(getHostArray(esServerHost));
+//            restClient = getRestClient(getHostArray(esServerHost));
             Request request = new Request("POST", "/" + indexName + "/_delete_by_query");
             request.addParameter("pretty", "true");
             request.setEntity(entity);
@@ -368,15 +372,6 @@ public class EsUtils {
             LOG.info("clearDataByIndexName response entity is : " + EntityUtils.toString(response.getEntity()));
         } catch (Exception e) {
             LOG.error("clearDataByIndexName failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in clearDataByIndexName.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in clearDataByIndexName.", e1);
-                }
-            }
         }
         return result;
     }
@@ -385,7 +380,7 @@ public class EsUtils {
     /**
      * Write one document into the index
      */
-    public static void putData(String index, String type, String id, Map<String, Object> esMap) throws Exception {
+    public static void putData(RestClient restClient, String index, String type, String id, Map<String, Object> esMap) throws Exception {
         initProperties();
         Gson gson = new Gson();
 
@@ -402,7 +397,7 @@ public class EsUtils {
         Response rsp;
 
         try {
-            restClient = getRestClient(getHostArray(esServerHost));
+//            restClient = getRestClient(getHostArray(esServerHost));
             Request request = new Request("POST", "/" + index + "/" + type + "/" + id);
             request.addParameter("pretty", "true");
             request.setEntity(entity);
@@ -415,16 +410,8 @@ public class EsUtils {
             LOG.info("PutData response entity is : " + EntityUtils.toString(rsp.getEntity()));
         } catch (Exception e) {
             LOG.error("PutData failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in clearDataByIndexName.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in clearDataByIndexName.", e1);
-                }
-            }
         }
+
     }
 
 
@@ -432,7 +419,7 @@ public class EsUtils {
      * Send a bulk request
      * 批量插入文档。    如果指定的文档id重复，会将原数据覆盖
      */
-    public static void bulk(String index, String type, List<Map<String, Object>> esMaps,String fieldPkPropName){
+    public static void bulk(RestClient restClient, String index, String type, List<Map<String, Object>> esMaps, String fieldPkPropName) {
 //        [
 //            {"xm":"qqq","zjhm":"123123"},
 //            {"xm":"www","zjhm":"23134"},
@@ -440,7 +427,6 @@ public class EsUtils {
 //        ]
         try {
             initProperties();
-            restClient = getRestClient(getHostArray(esServerHost));
             StringEntity entity;
             Gson gson = new Gson();
             String str = "{ \"index\" : { \"_index\" : \"" + index + "\", \"_type\" :  \"" + type + "\"} }";
@@ -449,9 +435,9 @@ public class EsUtils {
             for (Map<String, Object> esMap : esMaps) {
                 String strJson = gson.toJson(esMap);
                 //处理文档的id，如果配置了主键字段，将制定字段值作为文档的id
-                if (fieldPkPropName!=null){
-                    String fieldPk = esMap.get(fieldPkPropName)+"";
-                    str = "{ \"index\" : { \"_index\" : \"" + index + "\", \"_type\" :  \"" + type + "\",\"_id\": \""+fieldPk+"\"} }";
+                if (fieldPkPropName != null) {
+                    String fieldPk = esMap.get(fieldPkPropName) + "";
+                    str = "{ \"index\" : { \"_index\" : \"" + index + "\", \"_type\" :  \"" + type + "\",\"_id\": \"" + fieldPk + "\"} }";
                 }
                 LOG.info("input documents indexMsg：" + str);
                 LOG.info("input documents docMsg：" + strJson);
@@ -462,7 +448,6 @@ public class EsUtils {
             entity = new StringEntity(builder.toString(), ContentType.APPLICATION_JSON);
             entity.setContentEncoding("UTF-8");
             Response response;
-
             Request request = new Request("PUT", "/_bulk");
             request.addParameter("pretty", "true");
             request.setEntity(entity);
@@ -475,15 +460,6 @@ public class EsUtils {
             LOG.info("Bulk response entity is : " + EntityUtils.toString(response.getEntity()));
         } catch (Exception e) {
             LOG.error("Bulk failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in clearDataByIndexName.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in clearDataByIndexName.", e1);
-                }
-            }
         }
     }
 
@@ -491,18 +467,16 @@ public class EsUtils {
     /**
      * 根据多个索引名称统计es中数据量
      *
-     * @param indexNames
+     * @param indexNames 多个索引名称逗号分割   index1,index2
      * @return
      */
-    public static int getCountByIndexName(String indexNames) throws Exception {
+    public static int getCountByIndexName(RestClient restClient, String indexNames) throws Exception {
         initProperties();
         int result = 0;
         String jsonString = "{\n" + "  \"query\": {\n" + "    \"match_all\": {}\n" + "  }\n" + "}";
-
         HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
         Response response;
         try {
-            restClient = getRestClient(getHostArray(esServerHost));
             Request request = new Request("GET", "/" + indexNames + "/_count");
             request.addParameter("pretty", "true");
             request.setEntity(entity);
@@ -520,29 +494,9 @@ public class EsUtils {
             LOG.info("clearDataByIndexName response entity is : " + EntityUtils.toString(response.getEntity()));
         } catch (Exception e) {
             LOG.error("clearDataByIndexName failed, exception occurred.", e);
-        } finally {
-            if (restClient != null) {
-                try {
-                    restClient.close();
-                    LOG.info("Close the client successful in clearDataByIndexName.");
-                } catch (Exception e1) {
-                    LOG.error("Close the client failed in clearDataByIndexName.", e1);
-                }
-            }
         }
         return result;
     }
-
-
-//    public static void main(String[] args) {
-//        EsUtils esUtils = new EsUtils();
-//        try {
-//            int countByIndexName = esUtils.getCountByIndexName("dw_gas_jsr_1000968,");
-//            System.out.println("countByIndexName = " + countByIndexName);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
 
 }
