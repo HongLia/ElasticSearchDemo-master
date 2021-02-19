@@ -282,12 +282,13 @@ public class SearchApiImpl implements SearchApi {
      * Query the cluster's information
      */
     @Override
-    public void queryClusterInfo(RestClient restClient) {
+    public String queryClusterInfo(RestClient restClient) {
         try {
-            EsUtils.queryClusterInfo(restClient);
+            return EsUtils.queryClusterInfo(restClient);
         } catch (Exception e) {
             LOG.error("QueryClusterInfo failed", e);
         }
+        return "check!";
     }
 
 

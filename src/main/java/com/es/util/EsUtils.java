@@ -142,6 +142,7 @@ public class EsUtils {
      */
     public static RestClient getRestClient() throws Exception {
 
+        initProperties();
         //获取es集群地址
         HttpHost[] HostArray = getHostArray(esServerHost);
 
@@ -198,6 +199,7 @@ public class EsUtils {
 
     public static String queryClusterInfo(RestClient restClient) throws IOException {
         Response response = null;
+        String result = "msg";
         try {
             Request request = new Request("GET", "/_cluster/health");
             request.addParameter("pretty", "true");
@@ -208,11 +210,12 @@ public class EsUtils {
             } else {
                 LOG.error("QueryClusterInfo failed.");
             }
+            result = EntityUtils.toString(response.getEntity());
             LOG.info("QueryClusterInfo response entity is : " + EntityUtils.toString(response.getEntity()));
         } catch (Exception e) {
             LOG.error("QueryClusterInfo failed, exception occurred.", e);
         }
-        return EntityUtils.toString(response.getEntity());
+        return result;
     }
 
 

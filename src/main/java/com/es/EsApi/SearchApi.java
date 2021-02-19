@@ -33,7 +33,7 @@ public interface SearchApi {
      * @param restClient
      * @return
      */
-    void queryClusterInfo(RestClient restClient);
+    String queryClusterInfo(RestClient restClient);
 
     /**
      * 获取es的地段JsonStr

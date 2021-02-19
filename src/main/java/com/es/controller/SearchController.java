@@ -13,20 +13,11 @@ public class SearchController {
     @Autowired
     SearchApi searchApi;
 
-    @PostMapping("/searchTest")
+    @PostMapping("/queryHealth")
     @ResponseBody
-    public Response search() throws Exception {
-
+    public Response queryHealth() throws Exception {
         RestClient restClient = searchApi.getRestClient();
-        searchApi.queryClusterInfo(restClient);
-        boolean big = searchApi.indexIsExist(restClient, "fas_index");
-        System.out.println("big = " + big);
-
-        String keyword = "123";
-
-        searchApi.multiQuery(keyword);
-
-
-        return null;
+        String s = searchApi.queryClusterInfo(restClient);
+        return Response.success(s);
     }
 }
