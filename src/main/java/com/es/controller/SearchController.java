@@ -4,9 +4,7 @@ import com.es.EsApi.SearchApi;
 import com.es.util.Response;
 import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class SearchController {
@@ -20,4 +18,18 @@ public class SearchController {
         String s = searchApi.queryClusterInfo(restClient);
         return Response.success(s);
     }
+
+    @GetMapping("/createIndex")
+    public Response createIndex(@RequestParam String indexName) throws Exception {
+        // TODO: 2021/2/19 写死的JSON
+        String ss = "\"author\":{\n" +
+                "        \"type\": \"keyword\"\n" +
+                "      }";
+        return Response.success(searchApi.createIndex(indexName, ss));
+    }
+
+
+
+
+
 }

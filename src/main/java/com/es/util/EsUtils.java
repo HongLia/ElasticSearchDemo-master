@@ -250,7 +250,7 @@ public class EsUtils {
         Response rsp = null;
         String jsonString = "{" + "\"settings\":{" + "\"number_of_shards\":\"" + shardNum + "\","
                 + "\"number_of_replicas\":\"" + replicaNum + "\"," + indexJsonString + "}," + mappingJsonString + "}";
-        LOG.info("Create index  settings and mappings" + jsonString);
+        LOG.info("Create index  settings and mappings-----------：\n" + jsonString);
         HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
         try {
             Request request = new Request("PUT", "/" + indexName + "?include_type_name=false");

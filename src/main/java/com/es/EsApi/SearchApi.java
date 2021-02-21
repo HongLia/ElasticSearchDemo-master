@@ -36,7 +36,7 @@ public interface SearchApi {
     String queryClusterInfo(RestClient restClient);
 
     /**
-     * 获取es的地段JsonStr
+     * 获取es的字段JsonStr
      *
      * @param fieldType     字段类型
      * @param propName      字段名称
