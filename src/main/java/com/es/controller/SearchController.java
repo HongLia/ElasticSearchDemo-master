@@ -1,22 +1,20 @@
 package com.es.controller;
 
-import com.es.EsApi.SearchApi;
+import com.es.service.EsApi.SearchEngineService;
 import com.es.util.Response;
-import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class SearchController {
     @Autowired
-    SearchApi searchApi;
+    SearchEngineService searchEngineService;
 
     @PostMapping("/queryHealth")
     @ResponseBody
     public Response queryHealth() throws Exception {
-        RestClient restClient = searchApi.getRestClient();
-        String s = searchApi.queryClusterInfo(restClient);
-        return Response.success(s);
+        String s1 = searchEngineService.queryHealth();
+        return Response.success(s1);
     }
 
     @GetMapping("/createIndex")
@@ -25,7 +23,7 @@ public class SearchController {
         String ss = "\"author\":{\n" +
                 "        \"type\": \"keyword\"\n" +
                 "      }";
-        return Response.success(searchApi.createIndex(indexName, ss));
+        return Response.success(searchEngineService.createIndex(indexName, ss));
     }
 
 
