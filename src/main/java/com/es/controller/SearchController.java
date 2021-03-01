@@ -1,14 +1,21 @@
 package com.es.controller;
 
+import com.es.entity.ZsEntityDTO;
+import com.es.service.EntityService;
 import com.es.service.EsApi.SearchEngineService;
 import com.es.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
+@RequestMapping("/api/v1")
 public class SearchController {
     @Autowired
     SearchEngineService searchEngineService;
+    @Autowired
+    private EntityService entityService;
 
     @PostMapping("/queryHealth")
     @ResponseBody
@@ -26,6 +33,12 @@ public class SearchController {
         return Response.success(searchEngineService.createIndex(indexName, ss));
     }
 
+
+    @GetMapping("/getList")
+    public Response getList() {
+        List<ZsEntityDTO> all = entityService.getAll();
+        return Response.success(all);
+    }
 
 
 

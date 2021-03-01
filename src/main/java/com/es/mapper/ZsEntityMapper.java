@@ -1,8 +1,8 @@
-//package com.es.mapper;
-//
-//
-//import com.es.dao.ZsEntityDTO;
-//
-//public interface ZsEntityMapper extends BaseMapper<ZsEntityDTO, String> {
-//
-//}
+package com.es.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.es.entity.ZsEntityDTO;
+
+public interface ZsEntityMapper extends BaseMapper<ZsEntityDTO> {
+
+}
