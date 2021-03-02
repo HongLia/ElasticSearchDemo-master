@@ -1,8 +1,9 @@
 package com.es.controller;
 
-import com.es.entity.ZsEntityDTO;
-import com.es.service.EntityService;
+import com.es.entity.ZsEntityDO;
 import com.es.service.EsApi.SearchEngineService;
+import com.es.service.manager.ZsEntityManager;
+import com.es.service.service.ZsEntityService;
 import com.es.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class SearchController {
     @Autowired
     SearchEngineService searchEngineService;
     @Autowired
-    private EntityService entityService;
+    private ZsEntityManager entityManager;
 
     @PostMapping("/queryHealth")
     @ResponseBody
@@ -36,7 +37,7 @@ public class SearchController {
 
     @GetMapping("/getList")
     public Response getList() {
-        List<ZsEntityDTO> all = entityService.getAll();
+        List<ZsEntityDO> all = entityManager.getAll();
         return Response.success(all);
     }
 

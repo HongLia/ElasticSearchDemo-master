@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.es.mapper.ZsEntityMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.es.entity.ZsEntityDO">
+        <id column="id" property="id" />
+        <result column="category_id" property="categoryId" />
+        <result column="datasource_id" property="datasourceId" />
+        <result column="datasource_name" property="datasourceName" />
+        <result column="metadata_id" property="metadataId" />
+        <result column="table_name" property="tableName" />
+        <result column="table_text" property="tableText" />
+        <result column="entity_name" property="entityName" />
+        <result column="entity_text" property="entityText" />
+        <result column="entity_create" property="entityCreate" />
+        <result column="execute_sql" property="executeSql" />
+        <result column="filter_sql" property="filterSql" />
+        <result column="increment_field" property="incrementField" />
+        <result column="increment_type" property="incrementType" />
+        <result column="scount" property="scount" />
+        <result column="execute_value" property="executeValue" />
+        <result column="remark" property="remark" />
+        <result column="enabled" property="enabled" />
+        <result column="creator" property="creator" />
+        <result column="creator_name" property="creatorName" />
+        <result column="updator" property="updator" />
+        <result column="updator_name" property="updatorName" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, category_id, datasource_id, datasource_name, metadata_id, table_name, table_text, entity_name, entity_text, entity_create, execute_sql, filter_sql, increment_field, increment_type, scount, execute_value, remark, enabled, creator, creator_name, updator, updator_name, create_time, update_time
+    </sql>
+
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.es.mapper.ZsEntityCategoryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.es.entity.ZsEntityCategoryDO">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="parent_id" property="parentId" />
+        <result column="remark" property="remark" />
+        <result column="thesort" property="thesort" />
+        <result column="enabled" property="enabled" />
+        <result column="creator" property="creator" />
+        <result column="updator" property="updator" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, parent_id, remark, thesort, enabled, creator, updator
+    </sql>
+
+</mapper>

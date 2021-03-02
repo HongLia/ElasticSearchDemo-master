@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.es.mapper.ZsEntityFieldMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.es.entity.ZsEntityFieldDO">
+        <id column="id" property="id" />
+        <result column="entity_id" property="entityId" />
+        <result column="prop_name" property="propName" />
+        <result column="prop_text" property="propText" />
+        <result column="prop_type" property="propType" />
+        <result column="field_name" property="fieldName" />
+        <result column="field_text" property="fieldText" />
+        <result column="field_type" property="fieldType" />
+        <result column="field_pk" property="fieldPk" />
+        <result column="search_key" property="searchKey" />
+        <result column="search_field" property="searchField" />
+        <result column="overview_field" property="overviewField" />
+        <result column="details_field" property="detailsField" />
+        <result column="lists_field" property="listsField" />
+        <result column="archives_field" property="archivesField" />
+        <result column="archives_pk" property="archivesPk" />
+        <result column="thesort" property="thesort" />
+        <result column="enabled" property="enabled" />
+        <result column="creator" property="creator" />
+        <result column="create_time" property="createTime" />
+        <result column="updator" property="updator" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, entity_id, prop_name, prop_text, prop_type, field_name, field_text, field_type, field_pk, search_key, search_field, overview_field, details_field, lists_field, archives_field, archives_pk, thesort, enabled, creator, create_time, updator, update_time
+    </sql>
+
+</mapper>
