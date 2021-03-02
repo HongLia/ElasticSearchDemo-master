@@ -2,7 +2,7 @@ package com.es.service.EsApi.impl;
 
 import com.es.enums.WhetherEnum;
 import com.es.service.EsApi.SearchEngineService;
-import com.es.util.EsUtils;
+import com.es.util.es.EsUtils;
 import com.es.util.PropertiesUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.client.RestClient;

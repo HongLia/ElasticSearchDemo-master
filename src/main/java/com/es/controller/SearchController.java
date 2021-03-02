@@ -5,6 +5,8 @@ import com.es.service.EsApi.SearchEngineService;
 import com.es.service.manager.ZsEntityManager;
 import com.es.service.service.ZsEntityService;
 import com.es.util.Response;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,14 +14,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
+@Api(tags = "测试模块",value = "测试SearchController")
 public class SearchController {
     @Autowired
     SearchEngineService searchEngineService;
     @Autowired
     private ZsEntityManager entityManager;
 
-    @PostMapping("/queryHealth")
-    @ResponseBody
+    @ApiOperation("查看es健康状态")
+    @GetMapping("/queryHealth")
     public Response queryHealth() throws Exception {
         String s1 = searchEngineService.queryHealth();
         return Response.success(s1);
@@ -34,7 +37,7 @@ public class SearchController {
         return Response.success(searchEngineService.createIndex(indexName, ss));
     }
 
-
+    @ApiOperation("获取实体表所有数据")
     @GetMapping("/getList")
     public Response getList() {
         List<ZsEntityDO> all = entityManager.getAll();

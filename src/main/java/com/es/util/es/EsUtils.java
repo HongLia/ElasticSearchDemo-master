@@ -1,6 +1,7 @@
-package com.es.util;
+package com.es.util.es;
 
 import com.alibaba.fastjson.JSONObject;
+import com.es.util.PropertiesUtil;
 import com.google.gson.Gson;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -45,6 +46,7 @@ public class EsUtils {
     private static int replicaNum;
     private static int ConnectTimeout;
     private static int SocketTimeout;
+    private static int ConnectionRequestTimeout;
     private static String schema = "https";   //当是否需要验证isSecureMode为false，schema为http
 
     /**
@@ -57,6 +59,7 @@ public class EsUtils {
         MaxRetryTimeoutMillis = Integer.valueOf(PropertiesUtil.getpropetyByfile("MaxRetryTimeoutMillis", CONFIGURATION_FILE_NAME));
         ConnectTimeout = Integer.valueOf(PropertiesUtil.getpropetyByfile("ConnectTimeout", CONFIGURATION_FILE_NAME));
         SocketTimeout = Integer.valueOf(PropertiesUtil.getpropetyByfile("SocketTimeout", CONFIGURATION_FILE_NAME));
+        ConnectionRequestTimeout = Integer.valueOf(PropertiesUtil.getpropetyByfile("ConnectionRequestTimeout", CONFIGURATION_FILE_NAME));
         isSecureMode = PropertiesUtil.getpropetyByfile("isSecureMode", CONFIGURATION_FILE_NAME);
         shardNum = Integer.valueOf(PropertiesUtil.getpropetyByfile("shardNum", CONFIGURATION_FILE_NAME));
         replicaNum = Integer.valueOf(PropertiesUtil.getpropetyByfile("replicaNum", CONFIGURATION_FILE_NAME));
@@ -68,6 +71,7 @@ public class EsUtils {
         LOG.info("MaxRetryTimeoutMillis:" + MaxRetryTimeoutMillis);
         LOG.info("ConnectTimeout:" + ConnectTimeout);
         LOG.info("SocketTimeout:" + SocketTimeout);
+        LOG.info("ConnectionRequestTimeout:" + ConnectionRequestTimeout);
         LOG.info("shardNum:" + shardNum);
         LOG.info("replicaNum:" + replicaNum);
         LOG.info("isSecureMode:" + isSecureMode);
@@ -119,20 +123,15 @@ public class EsUtils {
             System.setProperty("es.security.indication", "false");
             builder = RestClient.builder(HostArray);
         }
-        Header[] defaultHeaders = new Header[]{new BasicHeader("Accept", "application/json"),
-                new BasicHeader("Content-type", "application/json")};
 
-        builder = builder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback() {
-            @Override
+        Header[] defaultHeaders = new Header[]{new BasicHeader("Accept", "application/json"), new BasicHeader("Content-type", "application/json")};
+        builder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback() {
             public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
-                return requestConfigBuilder.setConnectTimeout(ConnectTimeout).setSocketTimeout(SocketTimeout);
+                return requestConfigBuilder.setConnectTimeout(ConnectTimeout).setSocketTimeout(SocketTimeout).setConnectionRequestTimeout(ConnectionRequestTimeout);
             }
-        }).setMaxRetryTimeoutMillis(MaxRetryTimeoutMillis);
-
+        });
         builder.setDefaultHeaders(defaultHeaders);
         restClient = builder.build();
-        LOG.info("The RestClient has been created !");
-        restClient.setHosts(HostArray);
         return restClient;
     }
 
@@ -483,7 +482,7 @@ public class EsUtils {
     public static String queryHealth(RestClient restClient) {
 
         Response response = null;
-        String result = "msg";
+        String result = "The es not open！";
         try {
             Request request = new Request("GET", "/_cluster/health");
             request.addParameter("pretty", "true");
