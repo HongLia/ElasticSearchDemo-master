@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分数与百分比练习</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .result {
+            font-size: 20px;
+            color: green;
+            margin-top: 20px;
+        }
+        .data-source {
+            margin-top: 30px;
+            font-size: 18px;
+            text-align: left;
+            display: inline-block;
+        }
+        .data-source table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .data-source th, .data-source td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .data-source th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="question" id="question"></div>
+    <input type="text" id="answer" placeholder="输入你的答案"><br/>
+    <button onclick="checkAnswer()">提交</button>
+    <button onclick="resetQuestion()">再来一次</button>
+    <div class="result" id="result"></div>
+    <div class="data-source" id="dataSource" style="display: none;">
+        <h3>分数与百分比对照表</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>分数</th>
+                    <th>百分比</th>
+                </tr>
+            </thead>
+            <tbody id="dataSourceBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 数据源
+        const data = [
+            { fraction: '1/2', percentage: '50%' },
+            { fraction: '1/3', percentage: '33.3%' },
+            { fraction: '1/4', percentage: '25%' },
+            { fraction: '1/5', percentage: '20%' },
+            { fraction: '1/6', percentage: '16.7%' },
+            { fraction: '1/7', percentage: '14.3%' },
+            { fraction: '1/8', percentage: '12.5%' },
+            { fraction: '1/9', percentage: '11.1%' },
+            { fraction: '1/10', percentage: '10%' },
+            { fraction: '1/11', percentage: '9.1%' },
+            { fraction: '1/12', percentage: '8.3%' },
+            { fraction: '1/13', percentage: '7.7%' },
+            { fraction: '1/14', percentage: '7.1%' },
+            { fraction: '1/15', percentage: '6.7%' },
+            { fraction: '1/16', percentage: '6.25%' },
+            { fraction: '1/17', percentage: '5.9%' },
+            { fraction: '1/18', percentage: '5.6%' },
+            { fraction: '1/19', percentage: '5.3%' }
+        ];
+
+        let selectedData, correctAnswer;
+
+        // 初始化页面时出题
+        resetQuestion();
+
+        // 重置问题和答案
+        function resetQuestion() {
+            // 随机选择一个数据项
+            const randomIndex = Math.floor(Math.random() * data.length);
+            selectedData = data[randomIndex];
+
+            // 随机选择隐藏左侧（分数）还是右侧（百分比）
+            const hideLeft = Math.random() < 0.5;
+
+            // 设置问题和正确答案
+            if (hideLeft) {
+                question = `? = ${selectedData.percentage}`;
+                correctAnswer = selectedData.fraction;
+            } else {
+                question = `${selectedData.fraction} = ?`;
+                correctAnswer = selectedData.percentage;
+            }
+
+            // 显示问题
+            document.getElementById('question').innerText = question;
+
+            // 清空输入框和结果
+            document.getElementById('answer').value = '';
+            document.getElementById('result').innerText = '';
+
+            // 隐藏数据源表格
+            document.getElementById('dataSource').style.display = 'none';
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            const userAnswer = document.getElementById('answer').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            if (userAnswer === correctAnswer) {
+                resultDiv.innerText = '回答正确！';
+                // 隐藏数据源表格
+                document.getElementById('dataSource').style.display = 'none';
+            } else {
+                resultDiv.innerText = `回答错误，正确答案是：${correctAnswer}`;
+                // 显示数据源表格
+                showDataSource();
+            }
+        }
+
+        // 显示数据源表格
+        function showDataSource() {
+            const dataSourceBody = document.getElementById('dataSourceBody');
+            dataSourceBody.innerHTML = ''; // 清空表格内容
+
+            // 填充数据源
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${item.fraction}</td><td>${item.percentage}</td>`;
+                dataSourceBody.appendChild(row);
+            });
+
+            // 显示表格
+            document.getElementById('dataSource').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
